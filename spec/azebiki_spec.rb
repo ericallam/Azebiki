@@ -39,10 +39,10 @@ describe Azebiki::Checker do
             <a href="http://localhost:9292/metrics/click/post?slot_id=25709&amp;url=http%3A%2F%2Fgooglasdsade.com" rel="asdasnofollow">aklshjdkasd</a>
           </p>
           <p>
-            <map name="map2480" id="map2480">
-              <area href="http://localhost:9292/metrics/click" shape="rect" coords="0,0,206,45" rel="nofollow" />
+            <map name="map2480" id="map2480" class='hello'>
+              <area href="http://google.com" shape="rect" coords="0,0,206,45" rel="nofollow" />
               <br />
-              <area href="http://localhost:3000/code_of_ethics" shape="rect" coords="207,0,225,45" rel="nofollow" />
+              <area href="http://google2.com" shape="rect" coords="207,0,225,45" rel="nofollow" />
             </map><img alt="disclosure_badge_grey" border="0" src="http://localhost:9292/metrics/view/post" style="border:0" usemap="#map2480" />
           </p>
         </div>
@@ -56,7 +56,7 @@ HTML
   describe "contains" do
     it "should return true if the text is found in the html" do
       c = Azebiki::Checker.new(body) do
-        contains('Will somebody please find me?')
+        has_content "Will somebody please find me?"
       end
       
       c.should be_success
@@ -64,26 +64,16 @@ HTML
     
     it "should return false if the text is not in the html" do
       c = Azebiki::Checker.new(body) do
-        contains('This it not be in the html')
+         has_content 'This it not be in the html'
       end
       
       c.should_not be_success
     end
-  end # contains
-  
-  it "should allow a block to match child elements" do
-    c = Azebiki::Checker.new(body) do
-      matches('map', :id => 'map2480') do
-        matches('area', :href => "http://localhost:9292/metrics/click")
-      end
-    end
-    
-    c.should be_success
-  end
+  end 
   
   it "should allow wildcard matchs" do
     c = Azebiki::Checker.new(body) do
-      matches('map', :id => {'starts-with' => 'map'})
+      map(:id => {'starts-with' => 'map'})
     end
     
     c.should be_success
@@ -91,43 +81,32 @@ HTML
   
   it "should allow wildcard matches for content" do
     c = Azebiki::Checker.new(body) do
-      matches('a', :id => 'toplink', :content => "nightmares")
+      a('#toplink', :content => "nightmares")
     end
     
     c.should be_success
   end
-  
-  it "should allow a multiple child matches" do
-    c = Azebiki::Checker.new(body) do
-      matches('map', :id => 'map2480') do
-        matches('area', :href => "http://localhost:9292/metrics/click")
-        matches('area', :href => "http://localhost:3000/code_of_ethics")
-      end
-    end
-    
-    c.should be_success
-  end
-  
+
   it "should allow a multiple nested matches" do
-    c = Azebiki::Checker.new(body) do |v|
-      
-      matches('map', :id => 'map2480') do
-        matches('area', :href => "http://localhost:9292/metrics/click")
+    c = Azebiki::Checker.new(body) do
+      map('#map2480.hello') do
+        area(:href => 'http://google.com')
+        area(:href => 'http://google2.com')
       end
-      
-      matches('form') do
-        matches('input', :name => "q")
+
+      form do
+        input(:name => 'q')
       end
-      
     end
     
     c.should be_success
+    
   end
   
   it "should not be a success if child does not match" do
     c = Azebiki::Checker.new(body) do
-      matches('map', :id => 'map2480') do
-        matches('area', :href => "http://localhost:9292/nowayjose")
+      map('#map2480') do
+        area(:href => 'http://googlenoooooooo.com')
       end
     end
     
@@ -138,8 +117,8 @@ HTML
   
   it "should not match a parent in the child block" do
     c = Azebiki::Checker.new(body) do
-      matches('map', :id => 'map2480') do
-        matches('div', :class => "post")
+      map('#map2480') do
+        div('.post')
       end
     end
     
@@ -147,45 +126,16 @@ HTML
     c.errors.size.should == 1
   end
   
-  it "should be a success if everything matches" do
-    c = Azebiki::Checker.new(body) do
-      matches('map')
-    end
-    
-    c.should be_success
-  end
-  
-  it "should not be a success if one thing does not match" do
-    c = Azebiki::Checker.new(body) do
-      matches('h6')
-    end
-    
-    c.should_not be_success
-  end
-  
-  it "should match on attributes also" do
-    c = Azebiki::Checker.new(body) do
-      matches('map', :name => "map2481")
-    end
-    
-    c.should_not be_success
-    
-    c = Azebiki::Checker.new(body) do
-      matches('map', :name => "map2480")
-    end
-    
-    c.should be_success
-  end
   
   it "should match on the content also" do
     c = Azebiki::Checker.new(body) do
-      matches('a', :rel => 'asdasnofollow', :content => 'badcontent')
+      a(:rel => 'asdasnofollow', :content => 'badcontent')
     end
     
     c.success?.should == false
     
     c = Azebiki::Checker.new(body) do
-      matches('a', :rel => 'asdasnofollow', :content => 'aklshjdkasd')
+      a(:rel => 'asdasnofollow', :content => 'aklshjdkasd')
     end
     
     c.should be_success
@@ -193,8 +143,8 @@ HTML
   
   it "should allow multiple matches" do
     c = Azebiki::Checker.new(body) do
-      matches('a', :rel => 'asdasnofollow', :content => 'aklshjdkasd')
-      matches('map', :name => "map2480")
+      a(:rel => 'asdasnofollow', :content => 'aklshjdkasd')
+      map(:name => "map2480")
     end
     
     c.should be_success
@@ -202,8 +152,8 @@ HTML
   
   it "should not be a success if one of the matches is false" do
     c = Azebiki::Checker.new(body) do
-      matches('a', :rel => 'asdasnofollow', :content => 'aklshjdkasd')
-      matches('map', :name => "fail")
+      a(:rel => 'asdasnofollow', :content => 'aklshjdkasd')
+      map(:name => "fail")
     end
     
     c.should_not be_success
@@ -211,7 +161,7 @@ HTML
   
   it "should not match on comments" do
     c = Azebiki::Checker.new(body) do
-      matches('a', :content => 'Archive')
+      a(:content => 'Archive')
     end
     
     c.should_not be_success
@@ -219,7 +169,7 @@ HTML
   
   it "should match for urls with escaped in them" do
     c = Azebiki::Checker.new(body) do
-      matches('a', :id => "toplink", :href => "http://google.com?hello=world&something=1")
+      a("#toplink", :href => "http://google.com?hello=world&something=1")
     end
     
     c.should be_success
@@ -227,11 +177,11 @@ HTML
   
   it "should be able to nest more than 1 level deep" do
     c = Azebiki::Checker.new(body) do
-      matches('div', :id => "content") do
-        matches('div', :class => "post") do
-          matches('div', :class => "regular") do
-            matches('p') do
-              matches('a', :content => "aklshjdkasd")
+      div("#content") do
+        div(".post") do
+          div(".regular") do
+            p do
+              a(:content => "aklshjdkasd")
             end
           end
         end
@@ -245,9 +195,9 @@ HTML
     
     before do
       @c = Azebiki::Checker.new(body) do
-        matches('a', :rel => 'asdasnofollow', :content => 'aklshjdkasd') #success
-        matches('map', :name => "fail") #fail with default message
-        matches('div', :class => 'noclasshere').failure_message('There is no div with class noclasshere') # fail with custom message
+        a(:rel => 'asdasnofollow', :content => 'aklshjdkasd') #success
+        map(:name => "fail") #fail with default message
+        div('.noclasshere').failure_message('There is no div with class noclasshere') # fail with custom message
       end
     end
     
@@ -261,8 +211,8 @@ HTML
     
     it "should allow for custom failure messages on matching child elements" do
       c = Azebiki::Checker.new(body) do
-        matches('map', :id => 'map2481') do
-          matches('area', :href => "http://localhost:9292/metrics/click")
+        map('#map2481') do
+          area(:href => "http://localhost:9292/metrics/click")
         end.failure_message('There is no map')
       end
       
@@ -280,9 +230,9 @@ HTML
 
       lambda {
         Azebiki::Checker.new(body) do
-          matches('a', :rel => rel, :content => 'aklshjdkasd') #success
-          matches('map', :name => "fail") #fail with default message
-          matches('div', :class => 'noclasshere').failure_message('There is no div with class noclasshere') # fail with custom message
+          a(:rel => rel, :content => 'aklshjdkasd') #success
+          map(:name => "fail") #fail with default message
+          div('.noclasshere')
         end
       }.should_not raise_error(NameError)
     end

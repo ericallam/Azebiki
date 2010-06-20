@@ -93,6 +93,67 @@ module Azebiki
       end
       
     end
+
+    class MatcherBuilder < BasicObject
+
+      attr_reader :tags, :contents, :failure_message
+      
+      def initialize(&block)
+        @tags = []
+        @contents = []
+        instance_eval &block
+      end
+      
+      def has_content(text)
+        @contents << text
+      end
+
+      def method_missing(method, *args, &block)
+        tag = {:tag_name => method.to_s}
+        
+        if args.first.is_a?(::String)
+          id_or_class = args.first
+          
+          if id_or_class.split('#').size == 2
+            id_and_classes = id_or_class.split('#').last
+            id_and_classes = id_and_classes.split('.')
+            tag[:id] = id_and_classes.shift
+            tag[:class] = id_and_classes
+          end
+
+        elsif args.first.is_a?(::Hash)
+          tag.merge!(args.first)
+        end
+
+        if args[1] && args[1].is_a?(::Hash)
+          if classes = args[1][:class]
+            tag[:class] ||= []
+            classes.split('.').reject {|s| s.empty? }.each do |s|
+              tag[:class] << s
+            end
+
+            tag[:class].uniq!
+          end
+
+          tag.merge!(args[1])
+        end
+        
+        if tag[:class]
+          tag[:class] = tag[:class].join(' ')
+          tag.delete(:class) if tag[:class].strip.empty?
+        end
+        
+        tag[:child] = block
+  
+        @tags << tag
+
+        def tag.failure_message(text)
+          self[:failure_message] = text
+        end
+
+        return tag
+      end
+    end
     
     attr_accessor :content, :have_matchers, :errors
     
@@ -101,8 +162,10 @@ module Azebiki
       @errors = []
       @have_matchers = []
       @self_before_instance_eval = eval "self", block.binding
-      instance_eval &block
-      run_matches
+      @matcher_builder = MatcherBuilder.new(&block)
+      build_contents
+      build_matchers
+      run_matchers
     end
     
     def contains(matching_text)
@@ -110,6 +173,7 @@ module Azebiki
       @have_matchers << selector
       selector
     end
+
     
     def matches(name, attributes = {}, &block)
       if block_given?
@@ -132,12 +196,30 @@ module Azebiki
     end
     
     private
+
+    def build_contents
+      @matcher_builder.contents.each do |s|
+        contains s
+      end
+    end
     
     def method_missing(method, *args, &block)
       @self_before_instance_eval.send method, *args, &block
     end
     
-    def run_matches
+    def build_matchers
+      @matcher_builder.tags.each do |tag|
+        name = tag.delete(:tag_name)
+        b = tag.delete(:child)
+        attributes = tag
+        selector = matches(name, attributes, &b) 
+        if tag[:failure_message]
+          selector.failure_message(tag[:failure_message])
+        end
+      end
+    end
+
+    def run_matchers
       return true if @have_matchers.empty?
       @have_matchers.each do |selector|
         if !selector.matches?(@content)
