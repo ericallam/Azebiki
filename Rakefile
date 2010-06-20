@@ -2,7 +2,7 @@ require "bundler"
 Bundler.setup
 
 require "rspec/core/rake_task"
-Rspec::Core::RakeTask.new(:spec)
+RSpec::Core::RakeTask.new(:spec)
 
 gemspec = eval(File.read("azebiki.gemspec"))
 
