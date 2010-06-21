@@ -70,6 +70,8 @@ Or give it a custom error message:
 
 ## Install
 
+Ruby 1.9.* only, 1.8.* not supported.
+
 gem install azebiki
 
 
