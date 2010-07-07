@@ -1,0 +1,45 @@
+--- 
+hash: b5ea60a7eb842fb21e36354fbbe69e4e5259a563
+sources: 
+- Path: 
+    path: !ruby/object:Pathname 
+      path: /Users/eric/code/azebiki
+- Rubygems: 
+    uri: http://rubygems.org
+specs: 
+- rake: 
+    version: 0.8.7
+- nokogiri: 
+    version: 1.4.2
+- rack: 
+    version: 1.2.1
+- rack-test: 
+    version: 0.5.4
+- webrat: 
+    version: 0.7.1
+- azebiki: 
+    version: 0.0.1
+    source: 0
+- diff-lcs: 
+    version: 1.1.2
+- rspec-core: 
+    version: 2.0.0.beta.12
+- rspec-expectations: 
+    version: 2.0.0.beta.12
+- rspec-mocks: 
+    version: 2.0.0.beta.12
+- rspec: 
+    version: 2.0.0.beta.12
+dependencies: 
+  azebiki: 
+    version: ">= 0"
+    group: 
+    - :default
+  rake: 
+    version: ">= 0"
+    group: 
+    - :default
+  rspec: 
+    version: = 2.0.0.beta.12
+    group: 
+    - :default
