@@ -2,6 +2,12 @@ require 'webrat/core/matchers/have_selector'
 require 'webrat/core/matchers/have_content'
 require 'nokogiri'
 
+begin
+  require 'builder'
+rescue LoadError => e
+end
+
+
 # This class is useful for making sure an HTML text has certain tags/content
 # It supports both XML and HTML.  For example, if you want to make sure someone has included
 # a link that points to google, has no follow, with the text 'Google Sucks!':
@@ -29,6 +35,17 @@ require 'nokogiri'
 # end
 #
 # which will succeed only if the img tag is nested below the a tag.  You can nest matchers pretty deep
+#
+#
+
+unless defined?(BasicObject)
+  if defined?(Builder::BlankSlate)
+    BasicObject = Builder::BlankSlate
+  else
+    raise 'Azebiki only supported on 1.8.7 when used in a rails application, otherwise, use 1.9.2'
+  end
+end
+
 module Azebiki
   class Checker
     
@@ -108,7 +125,18 @@ module Azebiki
         @contents << text
       end
 
+      # special case for BlankSlate
+      def p(*args, &block)
+        handle_tag(:p, *args, &block)
+      end
+
       def method_missing(method, *args, &block)
+        handle_tag(method, *args, &block)
+      end
+
+      private
+
+      def handle_tag(method, *args, &block)
         tag = {:tag_name => method.to_s}
         
         if args.first.is_a?(::String)
@@ -153,6 +181,7 @@ module Azebiki
 
         return tag
       end
+
     end
     
     attr_accessor :content, :have_matchers, :errors
