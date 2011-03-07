@@ -50,11 +50,27 @@ module Azebiki
   class Checker
     
     class MyHaveSelector < Webrat::Matchers::HaveSelector
+      def tag_inspect
+        options = @options.dup
+        count = options.delete(:count)
+        content = options.delete(:content) unless @expected == "meta"
+
+        html = "<#{@expected}"
+        options.each do |k,v|
+          html << " #{k}='#{v}'"
+        end
+
+        html << ">#{content}</#{@expected}>"
+
+        html
+      end
+      
       def add_attributes_conditions_to(query)
         attribute_conditions = []
 
         @options.each do |key, value|
-          next if [:content, :count].include?(key)
+          next if key == :content unless @expected == "meta"
+          next if key == :count
           if value.is_a?(Hash)
             func, match = value.keys.first, value.values.first
             attribute_conditions << "#{func}(@#{key}, #{xpath_escape(match)})"
@@ -65,6 +81,12 @@ module Azebiki
         
         if attribute_conditions.any?
           query << "[#{attribute_conditions.join(' and ')}]"
+        end
+      end
+      
+      def add_content_condition_to(query)
+        if @options[:content] and @expected != "meta"
+          query << "[contains(., #{xpath_escape(@options[:content])})]"
         end
       end
 

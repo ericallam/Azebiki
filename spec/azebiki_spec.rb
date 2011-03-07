@@ -8,7 +8,7 @@ describe Azebiki::Checker do
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="something" />
     <title>
       testing auto payout new rejection - the affiliate of your nightmares
     </title>
@@ -86,14 +86,14 @@ HTML
     
     c.should be_success
   end
-
+  
   it "should allow a multiple nested matches" do
     c = Azebiki::Checker.new(body) do
       map('#map2480.hello') do
         area(:href => 'http://google.com')
         area(:href => 'http://google2.com')
       end
-
+  
       form do
         input(:name => 'q')
       end
@@ -111,7 +111,7 @@ HTML
     end
     
     c.should_not be_success
-
+  
     c.errors.size.should == 1
   end
   
@@ -126,6 +126,19 @@ HTML
     c.errors.size.should == 1
   end
   
+  it "should be able to match on metas content attribute" do
+    c = Azebiki::Checker.new(body) do
+      meta(:content => 'something')
+    end
+    
+    c.should be_success
+    
+    c = Azebiki::Checker.new(body) do
+      meta(:content => 'anything')
+    end
+    
+    c.errors.should include("Content should have included <meta content='anything'></meta>, but did not")
+  end
   
   it "should match on the content also" do
     c = Azebiki::Checker.new(body) do
@@ -193,6 +206,18 @@ HTML
   
   describe "errors" do
     
+    context 'with nested tags' do
+      subject {
+        Azebiki::Checker.new(body) do
+          div("#hello") do
+            div(".world")
+          end
+        end
+      }
+      
+      its(:errors) { should include('Content should have included') }
+    end
+    
     before do
       @c = Azebiki::Checker.new(body) do
         a(:rel => 'asdasnofollow', :content => 'aklshjdkasd') #success
@@ -227,7 +252,7 @@ HTML
     
     it "not raise a NoMethodError because the local var rel should be in the closure scope" do
       rel = 'asdasnofollow'
-
+  
       lambda {
         Azebiki::Checker.new(body) do
           a(:rel => rel, :content => 'aklshjdkasd') #success
