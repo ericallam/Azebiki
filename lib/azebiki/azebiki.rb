@@ -69,6 +69,7 @@ module Azebiki
         attribute_conditions = []
 
         @options.each do |key, value|
+          next if key == :failure_message
           next if key == :content unless @expected == "meta"
           next if key == :count
           if value.is_a?(Hash)
@@ -169,6 +170,8 @@ module Azebiki
             id_and_classes = id_and_classes.split('.')
             tag[:id] = id_and_classes.shift
             tag[:class] = id_and_classes
+          elsif id_or_class =~ /^\./
+            tag[:class] = id_or_class.split(".").reject {|cls| cls == "" }
           end
 
         elsif args.first.is_a?(::Hash)

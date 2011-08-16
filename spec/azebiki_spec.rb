@@ -49,6 +49,7 @@ describe Azebiki::Checker do
       </div>
     </div>
     <div id='world'>
+      <div id='foo'></div>
     </div>
   </body>
 </html>
@@ -87,6 +88,14 @@ HTML
     end
     
     c.should be_success
+  end
+  
+  it "should allow the first argument to be a class like .class" do
+    c = Azebiki::Checker.new(body) do
+      a('.toplink')
+    end
+    
+    c.should_not be_success
   end
   
   it "should allow a multiple nested matches" do
@@ -209,21 +218,36 @@ HTML
   describe "errors" do
     
     context 'with nested tags' do
-      subject {
-        Azebiki::Checker.new(body) do
-          div("#world") do
-            div(".hello").failure_message('No div with class .world')
+      context 'without match' do
+        subject {
+          Azebiki::Checker.new(body) do
+            div("#world") do
+              div("#foo").failure_message('No div with class .foo')
+            end
           end
+        }
+
+        its(:errors) { should be_empty }
+      end
+      
+      context 'with match' do
+        subject {
+          Azebiki::Checker.new(body) do
+            div("#world") do
+              div("#hello").failure_message('No div with class .world')
+            end
+          end
+        }
+
+        it "should bubble up child failure messages" do
+          subject.errors.should include("No div with class .world")
         end
-      }
-      
-      it "should bubble up child failure messages" do
-        subject.errors.should include("No div with class .world")
+
+        it "should only have the lowest error message" do
+          subject.errors.size.should == 1
+        end
       end
-      
-      it "should only have the lowest error message" do
-        subject.errors.size.should == 1
-      end
+
     end
     
     context 'without nested tags' do
@@ -231,7 +255,7 @@ HTML
         @c = Azebiki::Checker.new(body) do
           a(:rel => 'asdasnofollow', :content => 'aklshjdkasd') #success
           map(:name => "fail") #fail with default message
-          div('.noclasshere').failure_message('There is no div with class noclasshere')
+          div('#noclasshere').failure_message('There is no div with id noclasshere')
         end
       end
 
@@ -240,7 +264,7 @@ HTML
       end
 
       it "should allow for custom failure messages" do
-        @c.errors.should include('There is no div with class noclasshere')
+        @c.errors.should include('There is no div with id noclasshere')
       end
 
       it "should allow for custom failure messages on matching child elements" do
