@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    azebiki (0.0.4)
+    azebiki (0.0.5)
       webrat
 
 GEM
@@ -18,14 +18,14 @@ GEM
     rack-test (0.6.1)
       rack (>= 1.0)
     rake (0.8.7)
-    rspec (2.0.0.beta.12)
-      rspec-core (= 2.0.0.beta.12)
-      rspec-expectations (= 2.0.0.beta.12)
-      rspec-mocks (= 2.0.0.beta.12)
-    rspec-core (2.0.0.beta.12)
-    rspec-expectations (2.0.0.beta.12)
-      diff-lcs (>= 1.1.2)
-    rspec-mocks (2.0.0.beta.12)
+    rspec (2.6.0)
+      rspec-core (~> 2.6.0)
+      rspec-expectations (~> 2.6.0)
+      rspec-mocks (~> 2.6.0)
+    rspec-core (2.6.4)
+    rspec-expectations (2.6.0)
+      diff-lcs (~> 1.1.2)
+    rspec-mocks (2.6.0)
     ruby-debug-base19 (0.11.24)
       columnize (>= 0.3.1)
       linecache19 (>= 0.5.11)
@@ -48,5 +48,5 @@ DEPENDENCIES
   azebiki!
   builder
   rake
-  rspec (= 2.0.0.beta.12)
+  rspec (= 2.6.0)
   ruby-debug19

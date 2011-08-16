@@ -232,7 +232,7 @@ module Azebiki
     
     def matches(name, attributes = {}, &block)
       if block_given?
-        parent_checker = self
+        parent_checker = @parent_checker || self
         have = MyHaveSelector.new(name, attributes) do |n|
           Azebiki::Checker.new(n, parent_checker, &block).success?
         end

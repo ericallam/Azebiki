@@ -2,58 +2,70 @@ require "spec_helper"
 
 describe Azebiki::Checker do  
   
-  def body
-<<-HTML
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-  <head>
-    <meta http-equiv="Content-Type" content="something" />
-    <title>
-      testing auto payout new rejection - the affiliate of your nightmares
-    </title>
-    <link rel="alternate" type="application/rss+xml" title="RSS" href="http://imakemoremoneythangod.tumblr.com/rss" />
-  </head>
-  <body>
-    Will somebody please find me?
-    <div id="content">
-      <h1>
-        <a id="toplink" href="http://google.com?hello=world&amp;something=1">the affiliate of your nightmares</a>
-      </h1>
-      <div id="description">
-        <div>
-          <div id="search">
-            <form action="/search" method="get">
-              <input type="text" name="q" value="" /> <input type="submit" value="Search" />
-            </form>
-          </div><script name="a325e284-c8a4-11de-9917-0017f2c672a5" src="http://localhost:5000/itk/show/imakemoremoneythangod-tumblr-com" type="text/javascript">
-</script>
-          <p id="nav_container">
-            <!-- <a href="/archive" id="archive_link" name="archive_link">Archive</a> <span class="dim">/</span> <a href="http://imakemoremoneythangod.tumblr.com/rss">RSS</a> -->
-          </p>
+  let(:body) do
+    <<-HTML
+    <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+      <head>
+        <meta http-equiv="Content-Type" content="something" />
+        <title>
+          testing auto payout new rejection - the affiliate of your nightmares
+        </title>
+        <link rel="alternate" type="application/rss+xml" title="RSS" href="http://imakemoremoneythangod.tumblr.com/rss" />
+      </head>
+      <body>
+        Will somebody please find me?
+        <div id="content">
+          <h1>
+            <a id="toplink" href="http://google.com?hello=world&amp;something=1">the affiliate of your nightmares</a>
+          </h1>
+          <div id="description">
+            <div>
+              <div id="search">
+                <form action="/search" method="get">
+                  <input type="text" name="q" value="" /> <input type="submit" value="Search" />
+                </form>
+              </div><script name="a325e284-c8a4-11de-9917-0017f2c672a5" src="http://localhost:5000/itk/show/imakemoremoneythangod-tumblr-com" type="text/javascript">
+    </script>
+              <p id="nav_container">
+                <!-- <a href="/archive" id="archive_link" name="archive_link">Archive</a> <span class="dim">/</span> <a href="http://imakemoremoneythangod.tumblr.com/rss">RSS</a> -->
+              </p>
+            </div>
+          </div>
+          <div class="post">
+            <div class="regular">
+              <p>
+                <a href="http://localhost:9292/metrics/click/post?slot_id=25709&amp;url=http%3A%2F%2Fgooglasdsade.com" rel="asdasnofollow">aklshjdkasd</a>
+              </p>
+              <p>
+                <map name="map2480" id="map2480" class='hello'>
+                  <area href="http://google.com" shape="rect" coords="0,0,206,45" rel="nofollow" />
+                  <br />
+                  <area href="http://google2.com" shape="rect" coords="207,0,225,45" rel="nofollow" />
+                </map><img alt="disclosure_badge_grey" border="0" src="http://localhost:9292/metrics/view/post" style="border:0" usemap="#map2480" />
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="post">
-        <div class="regular">
-          <p>
-            <a href="http://localhost:9292/metrics/click/post?slot_id=25709&amp;url=http%3A%2F%2Fgooglasdsade.com" rel="asdasnofollow">aklshjdkasd</a>
-          </p>
-          <p>
-            <map name="map2480" id="map2480" class='hello'>
-              <area href="http://google.com" shape="rect" coords="0,0,206,45" rel="nofollow" />
-              <br />
-              <area href="http://google2.com" shape="rect" coords="207,0,225,45" rel="nofollow" />
-            </map><img alt="disclosure_badge_grey" border="0" src="http://localhost:9292/metrics/view/post" style="border:0" usemap="#map2480" />
-          </p>
+        <div id='world'>
+          <div id='foo'></div>
         </div>
-      </div>
-    </div>
-    <div id='world'>
-      <div id='foo'></div>
-    </div>
-  </body>
-</html>
-HTML
+
+        <form accept-charset="UTF-8" action="/weapons" class="new_weapon" id="new_weapon" method="post">
+          <div style="margin:0;padding:0;display:inline">
+            <input name="utf8" type="hidden" value="&#x2713;" />
+            <input name="authenticity_token" type="hidden" value="d7hp6Y+g2b9lpeePTkwraLAXy2n3HwlVGt06Oq3jgMc=" />
+          </div>
+          <select id="weapon_condition" name="weapon[condition]">
+            <option value="New">New</option>
+            <option value="Rusty">Rusty</option>
+            <option value="Broken">Broken</option>
+          </select> 
+        </form>
+      </body>
+    </html>
+    HTML
   end
   
   describe "contains" do
@@ -112,6 +124,32 @@ HTML
     
     c.should be_success
     
+  end
+  
+  it "should allow three levels of nesting for this form" do
+    c = Azebiki::Checker.new(body) do
+      form('#new_weapon.new_weapon', action: '/weapons', method: 'post') do
+        select('#weapon_condition', name: 'weapon[condition]') do
+          option(value: 'New', content: 'New')
+          option(value: 'Rusty', content: 'Rusty')
+          option(value: 'Broken', content: 'Broken')
+        end
+      end
+    end
+    
+    c.should be_success
+  end
+  
+  it "should make the third level error bubble up" do
+    c = Azebiki::Checker.new(body) do
+      form('#new_weapon.new_weapon', action: '/weapons', method: 'post') do
+        select('#weapon_condition', name: 'weapon[condition]') do
+          option(value: 'Hello', content: 'Hello')
+        end
+      end
+    end
+    
+    c.errors.should include("Content should have included <option value='Hello'>Hello</option>, but did not")
   end
   
   it "should not be a success if child does not match" do
