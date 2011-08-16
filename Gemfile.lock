@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    azebiki (0.0.5)
+    azebiki (0.0.6)
       webrat
 
 GEM

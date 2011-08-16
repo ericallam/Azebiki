@@ -70,6 +70,7 @@ module Azebiki
 
         @options.each do |key, value|
           next if key == :failure_message
+          next if key == :not
           next if key == :content unless @expected == "meta"
           next if key == :count
           if value.is_a?(Hash)
@@ -95,10 +96,16 @@ module Azebiki
         @block ||= block
         matched = matches(stringlike)
 
-        if @options[:count]
+        result = if @options[:count]
           matched.size == @options[:count] && (!@block || @block.call(matched))
         else
           matched.any? && (!@block || @block.call(matched))
+        end
+        
+        if @options[:not]
+          !result
+        else
+          result
         end
       end
 
@@ -202,6 +209,12 @@ module Azebiki
 
         def tag.failure_message(text)
           self[:failure_message] = text
+          self
+        end
+        
+        def tag.!
+          self[:not] = true
+          self
         end
 
         return tag

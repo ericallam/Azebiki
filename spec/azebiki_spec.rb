@@ -94,6 +94,15 @@ describe Azebiki::Checker do
     c.should be_success
   end
   
+  it "should allow you to make sure something doesnt match" do
+    c = Azebiki::Checker.new(body) do
+      !a('#toplink').failure_message('a #toplink should not exist')
+    end
+    
+    c.should_not be_success
+    c.errors.should include('a #toplink should not exist')
+  end
+  
   it "should allow wildcard matches for content" do
     c = Azebiki::Checker.new(body) do
       a('#toplink', :content => "nightmares")
