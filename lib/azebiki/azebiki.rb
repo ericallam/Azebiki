@@ -206,14 +206,15 @@ module Azebiki
 
     end
     
-    attr_accessor :content, :have_matchers, :errors
+    attr_accessor :content, :have_matchers, :errors, :parent_checker
     
-    def initialize(content, &block)
+    def initialize(content, parent_checker=nil, &block)
       @content = content
       @errors = []
       @have_matchers = []
       @self_before_instance_eval = eval "self", block.binding
       @matcher_builder = MatcherBuilder.new(&block)
+      @parent_checker = parent_checker
       build_contents
       build_matchers
       run_matchers
@@ -228,9 +229,9 @@ module Azebiki
     
     def matches(name, attributes = {}, &block)
       if block_given?
-        
+        parent_checker = self
         have = MyHaveSelector.new(name, attributes) do |n|
-          Azebiki::Checker.new(n, &block).success?
+          Azebiki::Checker.new(n, parent_checker, &block).success?
         end
         
         selector = MatcherProxy.new(have)
@@ -274,7 +275,11 @@ module Azebiki
       return true if @have_matchers.empty?
       @have_matchers.each do |selector|
         if !selector.matches?(@content)
-          @errors << selector.message
+          if @parent_checker != nil
+            @parent_checker.errors << selector.message
+          else
+            @errors << selector.message
+          end
         end
       end
 

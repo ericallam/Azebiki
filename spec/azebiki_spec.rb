@@ -48,6 +48,8 @@ describe Azebiki::Checker do
         </div>
       </div>
     </div>
+    <div id='world'>
+    </div>
   </body>
 </html>
 HTML
@@ -209,41 +211,48 @@ HTML
     context 'with nested tags' do
       subject {
         Azebiki::Checker.new(body) do
-          div("#hello") do
-            div(".world")
+          div("#world") do
+            div(".hello").failure_message('No div with class .world')
           end
         end
       }
       
-      its(:errors) { should include('Content should have included') }
-    end
-    
-    before do
-      @c = Azebiki::Checker.new(body) do
-        a(:rel => 'asdasnofollow', :content => 'aklshjdkasd') #success
-        map(:name => "fail") #fail with default message
-        div('.noclasshere').failure_message('There is no div with class noclasshere') # fail with custom message
-      end
-    end
-    
-    it "should return a list of errors for each match that fails" do
-      @c.errors.size.should == 2
-    end
-    
-    it "should allow for custom failure messages" do
-      @c.errors.should include('There is no div with class noclasshere')
-    end
-    
-    it "should allow for custom failure messages on matching child elements" do
-      c = Azebiki::Checker.new(body) do
-        map('#map2481') do
-          area(:href => "http://localhost:9292/metrics/click")
-        end.failure_message('There is no map')
+      it "should bubble up child failure messages" do
+        subject.errors.should include("No div with class .world")
       end
       
-      c.errors.should include('There is no map')
+      it "should only have the lowest error message" do
+        subject.errors.size.should == 1
+      end
     end
     
+    context 'without nested tags' do
+      before do
+        @c = Azebiki::Checker.new(body) do
+          a(:rel => 'asdasnofollow', :content => 'aklshjdkasd') #success
+          map(:name => "fail") #fail with default message
+          div('.noclasshere').failure_message('There is no div with class noclasshere')
+        end
+      end
+
+      it "should return a list of errors for each match that fails" do
+        @c.errors.size.should == 2
+      end
+
+      it "should allow for custom failure messages" do
+        @c.errors.should include('There is no div with class noclasshere')
+      end
+
+      it "should allow for custom failure messages on matching child elements" do
+        c = Azebiki::Checker.new(body) do
+          map('#map2481') do
+            area(:href => "http://localhost:9292/metrics/click")
+          end.failure_message('There is no map')
+        end
+
+        c.errors.should include('There is no map')
+      end
+    end    
     
   end # errors
   
