@@ -111,6 +111,14 @@ describe Azebiki::Checker do
     c.should be_success
   end
   
+  it "should allow case insensitive matches for content when using regex" do
+    c = Azebiki::Checker.new(body) do
+      a('#toplink', :content => {regex: true, :to_s => "The Affiliate of Your Nightmares"})
+    end
+    
+    c.should be_success
+  end
+  
   it "should allow the first argument to be a class like .class" do
     c = Azebiki::Checker.new(body) do
       a('.toplink')

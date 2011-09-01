@@ -88,8 +88,32 @@ module Azebiki
       
       def add_content_condition_to(query)
         if @options[:content] and @expected != "meta"
-          query << "[contains(., #{xpath_escape(@options[:content])})]"
+          if @options[:content].is_a?(Hash) and @options[:content][:regex]
+            query << "[regex(., #{xpath_escape(@options[:content][:to_s])})]"
+          else
+            query << "[contains(., #{xpath_escape(@options[:content])})]"
+          end
         end
+      end
+      
+      def nokogiri_matches(stringlike)
+        if Nokogiri::XML::NodeSet === stringlike
+          @query = query.gsub(%r'^//', './/')
+        else
+          @query = query
+        end
+
+        add_options_conditions_to(@query)
+        
+        args = [@query]
+        args << Class.new {
+          def self.regex(node_set, regex)
+            node_set.find_all { |node| node.content =~ /#{regex}/i }
+          end
+        }
+
+        @document = Webrat::XML.document(stringlike)
+        @document.xpath(*args)
       end
 
       def matches?(stringlike, &block)
